@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
+const reciclajeRoutes = require('./routes/reciclaje');
 
 const app = express();
 const PORT = 3001;
@@ -11,6 +12,7 @@ app.use(express.json());            // Parsear JSON en el body
 
 // ─── Rutas ─────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
+app.use('/api/reciclaje', reciclajeRoutes);
 
 // ─── Health Check ──────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {
@@ -28,7 +30,7 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log('========================================');
     console.log(`   ReciGo Backend corriendo`);
     console.log(`   Local:   http://localhost:${PORT}`);
-    console.log(`   Red:     http://192.168.0.15:${PORT}`);
+    console.log(`   Red:     http://192.168.1.7:${PORT}`);
     console.log('==========================================');
     console.log('');
 });

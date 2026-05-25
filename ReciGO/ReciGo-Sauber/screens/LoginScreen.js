@@ -15,6 +15,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginUser } from '../services/authService';
 
 // ─── Brand Colors ───────────────────────────────────────────────────────
@@ -60,7 +61,9 @@ export default function LoginScreen() {
         setLoading(true);
         try {
             const data = await loginUser(email.trim(), password);
-            // Login exitoso → guardar datos y navegar
+            // Guardar usuario en AsyncStorage para uso global
+            await AsyncStorage.setItem('usuario', JSON.stringify(data.usuario));
+            // Login exitoso → navegar
             navigation.navigate('Home', { usuario: data.usuario });
         } catch (error) {
             setErrorMsg(error.message || 'Correo o contraseña incorrectos.');

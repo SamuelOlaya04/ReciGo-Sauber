@@ -1,14 +1,14 @@
 import { API_URL } from '../config';
 
 // ─── Registrar nuevo usuario ───────────────────────────────────────────────
-export const registerUser = async (nombre_completo, correo, contrasena) => {
+export const registerUser = async (nombre_completo, correo, contrasena, rol = 'usuario') => {
     try {
         const response = await fetch(`${API_URL}/api/auth/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ nombre_completo, correo, contrasena }),
+            body: JSON.stringify({ nombre_completo, correo, contrasena, rol }),
         });
 
         const data = await response.json();
@@ -18,7 +18,7 @@ export const registerUser = async (nombre_completo, correo, contrasena) => {
             throw new Error(data.error || 'Error al registrar usuario');
         }
 
-        return data; // { message, usuario: { id_usuario, nombre_completo, correo } }
+        return data; // { message, usuario: { id_usuario, nombre_completo, correo, rol } }
 
     } catch (error) {
         if (error.message === 'Network request failed') {
@@ -45,7 +45,7 @@ export const loginUser = async (correo, contrasena) => {
             throw new Error(data.error || 'Error al iniciar sesión');
         }
 
-        return data; // { message, usuario: { id_usuario, nombre_completo, correo } }
+        return data; // { message, usuario: { id_usuario, nombre_completo, correo, rol } }
 
     } catch (error) {
         if (error.message === 'Network request failed') {

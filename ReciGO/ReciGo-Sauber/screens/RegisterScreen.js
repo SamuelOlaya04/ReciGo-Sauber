@@ -20,6 +20,8 @@ import { registerUser } from '../services/authService';
 // ─── Brand Colors ───────────────────────────────────────────────────────
 const BRAND_GREEN = '#22C55E';
 const BRAND_GREEN_DARK = '#16A34A';
+const BRAND_BLUE = '#3B82F6';
+const BRAND_BLUE_DARK = '#1D4ED8';
 
 // ─── Main Screen ────────────────────────────────────────────────────────
 export default function RegisterScreen() {
@@ -33,6 +35,7 @@ export default function RegisterScreen() {
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
     const [successVisible, setSuccessVisible] = useState(false);
+    const [rol, setRol] = useState('usuario'); // 'usuario' o 'admin'
 
     const isFormValid =
         name.trim() !== '' &&
@@ -57,7 +60,7 @@ export default function RegisterScreen() {
         }
         setLoading(true);
         try {
-            await registerUser(name.trim(), email.trim(), password);
+            await registerUser(name.trim(), email.trim(), password, rol);
             setSuccessVisible(true);
             setTimeout(() => {
                 navigation.navigate('Login');
@@ -92,7 +95,10 @@ export default function RegisterScreen() {
                     </TouchableOpacity>
 
                     {/* ── Heading ──────────────── */}
-                    <Text style={styles.heading}>Crea tu cuenta 🌱</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                        <Text style={styles.heading}>Crea tu cuenta</Text>
+                        <MaterialCommunityIcons name="leaf" size={26} color="#22C55E" />
+                    </View>
                     <Text style={styles.subheading}>Únete y comienza a hacer la diferencia</Text>
 
                     {/* ── Success Banner ──────── */}
@@ -100,11 +106,68 @@ export default function RegisterScreen() {
                         <View style={styles.successBox}>
                             <Ionicons name="checkmark-circle-outline" size={24} color="#16A34A" style={{ marginRight: 12 }} />
                             <View style={{ flex: 1 }}>
-                                <Text style={styles.successTitle}>¡Cuenta creada exitosamente! 🌱</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                    <Text style={styles.successTitle}>¡Cuenta creada exitosamente!</Text>
+                                    <MaterialCommunityIcons name="leaf" size={16} color="#16A34A" />
+                                </View>
                                 <Text style={styles.successSubtitle}>Redirigiendo al inicio de sesión...</Text>
                             </View>
                         </View>
                     )}
+
+                    {/* ── Selector de tipo de cuenta ─── */}
+                    <Text style={styles.label}>Tipo de cuenta</Text>
+                    <View style={styles.rolSelector}>
+                        <TouchableOpacity
+                            style={[styles.rolOption, rol === 'usuario' && styles.rolOptionActive]}
+                            activeOpacity={0.8}
+                            onPress={() => setRol('usuario')}
+                        >
+                            <View style={[styles.rolIconCircle, { backgroundColor: rol === 'usuario' ? '#DCFCE7' : '#F3F4F6' }]}>
+                                <MaterialCommunityIcons
+                                    name="recycle"
+                                    size={22}
+                                    color={rol === 'usuario' ? BRAND_GREEN : '#9CA3AF'}
+                                />
+                            </View>
+                            <Text style={[styles.rolLabel, rol === 'usuario' && styles.rolLabelActive]}>
+                                Usuario
+                            </Text>
+                            <Text style={[styles.rolSub, rol === 'usuario' && styles.rolSubActive]}>
+                                Registra reciclaje
+                            </Text>
+                            {rol === 'usuario' && (
+                                <View style={styles.rolCheck}>
+                                    <Ionicons name="checkmark-circle" size={18} color={BRAND_GREEN} />
+                                </View>
+                            )}
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.rolOption, rol === 'admin' && styles.rolOptionActiveAdmin]}
+                            activeOpacity={0.8}
+                            onPress={() => setRol('admin')}
+                        >
+                            <View style={[styles.rolIconCircle, { backgroundColor: rol === 'admin' ? '#EFF6FF' : '#F3F4F6' }]}>
+                                <MaterialCommunityIcons
+                                    name="shield-check-outline"
+                                    size={22}
+                                    color={rol === 'admin' ? BRAND_BLUE : '#9CA3AF'}
+                                />
+                            </View>
+                            <Text style={[styles.rolLabel, rol === 'admin' && styles.rolLabelActiveAdmin]}>
+                                Administrador
+                            </Text>
+                            <Text style={[styles.rolSub, rol === 'admin' && styles.rolSubActiveAdmin]}>
+                                Valida registros
+                            </Text>
+                            {rol === 'admin' && (
+                                <View style={styles.rolCheck}>
+                                    <Ionicons name="checkmark-circle" size={18} color={BRAND_BLUE} />
+                                </View>
+                            )}
+                        </TouchableOpacity>
+                    </View>
 
                     {/* ── Name Field ───────────── */}
                     <Text style={styles.label}>Nombre completo</Text>
@@ -235,9 +298,12 @@ export default function RegisterScreen() {
                         disabled={loading}
                     >
                         <LinearGradient
-                            colors={isFormValid && !loading
-                                ? [BRAND_GREEN, BRAND_GREEN_DARK]
-                                : ['#D1D5DB', '#9CA3AF']
+                            colors={
+                                isFormValid && !loading
+                                    ? rol === 'admin'
+                                        ? [BRAND_BLUE, BRAND_BLUE_DARK]
+                                        : [BRAND_GREEN, BRAND_GREEN_DARK]
+                                    : ['#D1D5DB', '#9CA3AF']
                             }
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
@@ -246,7 +312,14 @@ export default function RegisterScreen() {
                             {loading ? (
                                 <ActivityIndicator color="#FFFFFF" size="small" />
                             ) : (
-                                <Text style={styles.registerButtonText}>Crear cuenta</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                    <MaterialCommunityIcons
+                                        name={rol === 'admin' ? 'shield-check' : 'leaf'}
+                                        size={20}
+                                        color="#fff"
+                                    />
+                                    <Text style={styles.registerButtonText}>Crear cuenta</Text>
+                                </View>
                             )}
                         </LinearGradient>
                     </TouchableOpacity>
@@ -314,6 +387,67 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#374151',
         marginBottom: 8,
+    },
+
+    /* ── Selector de rol ──────── */
+    rolSelector: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: 24,
+    },
+    rolOption: {
+        flex: 1,
+        backgroundColor: '#F9FAFB',
+        borderWidth: 1.5,
+        borderColor: '#E5E7EB',
+        borderRadius: 16,
+        padding: 16,
+        alignItems: 'center',
+        position: 'relative',
+    },
+    rolOptionActive: {
+        borderColor: BRAND_GREEN,
+        backgroundColor: '#F0FDF4',
+    },
+    rolOptionActiveAdmin: {
+        borderColor: '#3B82F6',
+        backgroundColor: '#EFF6FF',
+    },
+    rolIconCircle: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    rolLabel: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#9CA3AF',
+        marginBottom: 4,
+    },
+    rolLabelActive: {
+        color: BRAND_GREEN,
+    },
+    rolLabelActiveAdmin: {
+        color: '#3B82F6',
+    },
+    rolSub: {
+        fontSize: 11,
+        color: '#9CA3AF',
+        textAlign: 'center',
+    },
+    rolSubActive: {
+        color: '#6B7280',
+    },
+    rolSubActiveAdmin: {
+        color: '#6B7280',
+    },
+    rolCheck: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
     },
 
     /* ── Input Fields ─────────── */

@@ -11,6 +11,9 @@ import GamificationScreen   from './screens/GamificationScreen';
 import DashboardScreen      from './screens/DashboardScreen';
 import EducationScreen      from './screens/EducationScreen';
 import AgregarScreen        from './screens/AgregarScreen';
+import EducationDetailScreen from './screens/EducationDetailScreen';
+import ProfileScreen         from './screens/ProfileScreen';
+import AdminDashboardScreen  from './screens/AdminDashboardScreen';
 
 class ErrorBoundary extends React.Component {
     constructor(props) { super(props); this.state = { hasError: false, error: null }; }
@@ -44,6 +47,9 @@ export default function App() {
                     <Stack.Screen name="Dashboard"    component={DashboardScreen}    options={{ animation: 'none' }} />
                     <Stack.Screen name="Education"    component={EducationScreen}    options={{ animation: 'none' }} />
                     <Stack.Screen name="Agregar"      component={AgregarScreen}      options={{ animation: 'none' }} />
+                    <Stack.Screen name="EducationDetail" component={EducationDetailScreen} options={{ animation: 'none' }} />
+                    <Stack.Screen name="Profile"       component={ProfileScreen}        options={{ animation: 'none' }} />
+                    <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen}  options={{ animation: 'none' }} />
                 </Stack.Navigator>
             </NavigationContainer>
         </ErrorBoundary>

@@ -15,32 +15,13 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginUser } from '../services/authService';
+import AppLogo from '../components/AppLogo';
 
 // ─── Brand Colors ───────────────────────────────────────────────────────
 const BRAND_GREEN = '#22C55E';
 const BRAND_GREEN_DARK = '#16A34A';
-
-// ─── Google "G" Icon ────────────────────────────────────────────────────
-const GoogleIcon = () => (
-    <View style={googleStyles.container}>
-        <Text style={googleStyles.g}>G</Text>
-    </View>
-);
-
-const googleStyles = StyleSheet.create({
-    container: {
-        width: 24,
-        height: 24,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    g: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#4285F4',
-    },
-});
 
 // ─── Main Screen ────────────────────────────────────────────────────────
 export default function LoginScreen() {
@@ -60,8 +41,11 @@ export default function LoginScreen() {
         setLoading(true);
         try {
             const data = await loginUser(email.trim(), password);
-            // Login exitoso → guardar datos y navegar
-            navigation.navigate('Home', { usuario: data.usuario });
+            // Guardar usuario en AsyncStorage para uso global (incluye el rol)
+            await AsyncStorage.setItem('usuario', JSON.stringify(data.usuario));
+            // Login exitoso → navegar según el rol
+            const destino = data.usuario?.rol === 'admin' ? 'AdminDashboard' : 'Home';
+            navigation.navigate(destino, { usuario: data.usuario });
         } catch (error) {
             setErrorMsg(error.message || 'Correo o contraseña incorrectos.');
         } finally {
@@ -93,14 +77,12 @@ export default function LoginScreen() {
 
                     {/* ── Logo Row ─────────────── */}
                     <View style={styles.logoRow}>
-                        <View style={styles.logoCircle}>
-                            <MaterialCommunityIcons name="recycle" size={20} color={BRAND_GREEN} />
-                        </View>
+                        <AppLogo size={38} />
                         <Text style={styles.logoText}>ReciGo</Text>
                     </View>
 
                     {/* ── Heading ──────────────── */}
-                    <Text style={styles.heading}>Bienvenido de vuelta 👋</Text>
+                    <Text style={styles.heading}>Bienvenido de vuelta </Text>
                     <Text style={styles.subheading}>Ingresa tus datos para continuar</Text>
 
                     {/* ── Email Field ──────────── */}
@@ -198,17 +180,6 @@ export default function LoginScreen() {
                         <Text style={styles.separatorText}>o continúa con</Text>
                         <View style={styles.separatorLine} />
                     </View>
-
-                    {/* ── Google Button ────────── */}
-                    <TouchableOpacity
-                        style={styles.googleButton}
-                        activeOpacity={0.7}
-                        onPress={() => Alert.alert('Próximamente', 'El inicio de sesión con Google estará disponible pronto.')}
-                    >
-                        <GoogleIcon />
-                        <Text style={styles.googleButtonText}>Continuar con Google</Text>
-                    </TouchableOpacity>
-
                     {/* ── Register Link ────────── */}
                     <View style={styles.registerRow}>
                         <Text style={styles.registerText}>¿No tienes cuenta? </Text>

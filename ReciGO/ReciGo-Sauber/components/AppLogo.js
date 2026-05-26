@@ -1,13 +1,15 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Animated, StyleSheet } from 'react-native';
+import { View, Animated, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-// Logo animado de ReciGo — círculos de reciclaje giratorios
+// Logo de ReciGo — ícono de hoja con fondo verde animado
 export default function AppLogo({ size = 42, animated = false }) {
+    const pulse = useRef(new Animated.Value(1)).current;
     const rotate = useRef(new Animated.Value(0)).current;
-    const pulse  = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
         if (!animated) return;
+
         Animated.loop(
             Animated.sequence([
                 Animated.timing(pulse, { toValue: 1.08, duration: 900, useNativeDriver: true }),
@@ -25,6 +27,7 @@ export default function AppLogo({ size = 42, animated = false }) {
     }, [animated]);
 
     const spin = rotate.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
+    const iconSize = size * 0.55;
 
     return (
         <Animated.View style={[
@@ -32,13 +35,9 @@ export default function AppLogo({ size = 42, animated = false }) {
             { width: size, height: size, borderRadius: size * 0.22 },
             animated && { transform: [{ scale: pulse }] },
         ]}>
-            <Animated.Text style={[
-                styles.emoji,
-                { fontSize: size * 0.52 },
-                animated && { transform: [{ rotate: spin }] },
-            ]}>
-                🌱
-            </Animated.Text>
+            <Animated.View style={animated && { transform: [{ rotate: spin }] }}>
+                <MaterialCommunityIcons name="recycle" size={iconSize} color="#fff" />
+            </Animated.View>
         </Animated.View>
     );
 }
@@ -54,5 +53,4 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 6,
     },
-    emoji: { textAlign: 'center' },
 });

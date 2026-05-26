@@ -5,7 +5,7 @@ const pool = require('../db');
 
 // ─── POST /api/auth/register ───────────────────────────────────────────────
 router.post('/register', async (req, res) => {
-    const { nombre_completo, correo, contrasena } = req.body;
+    const { nombre_completo, correo, contrasena, rol } = req.body;
 
     // Validar campos obligatorios
     if (!nombre_completo || !correo || !contrasena) {
@@ -23,6 +23,9 @@ router.post('/register', async (req, res) => {
         return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
     }
 
+    // Validar rol — solo permitir 'usuario' o 'admin'
+    const rolValido = ['usuario', 'admin'].includes(rol) ? rol : 'usuario';
+
     try {
         // Verificar si el correo ya existe
         const [existing] = await pool.query(
@@ -37,13 +40,13 @@ router.post('/register', async (req, res) => {
         // Hashear la contraseña con bcrypt (salt rounds = 10)
         const hashedPassword = await bcrypt.hash(contrasena, 10);
 
-        // Insertar usuario en la base de datos
+        // Insertar usuario en la base de datos con el rol correspondiente
         const [result] = await pool.query(
-            'INSERT INTO usuarios (nombre_completo, correo, contrasena) VALUES (?, ?, ?)',
-            [nombre_completo.trim(), correo.toLowerCase().trim(), hashedPassword]
+            'INSERT INTO usuarios (nombre_completo, correo, contrasena, rol) VALUES (?, ?, ?, ?)',
+            [nombre_completo.trim(), correo.toLowerCase().trim(), hashedPassword, rolValido]
         );
 
-        console.log(`✅ Nuevo usuario registrado: ${correo} (ID: ${result.insertId})`);
+        console.log(`✅ Nuevo usuario registrado: ${correo} (ID: ${result.insertId}, Rol: ${rolValido})`);
 
         res.status(201).json({
             message: 'Usuario registrado exitosamente',
@@ -51,6 +54,7 @@ router.post('/register', async (req, res) => {
                 id_usuario: result.insertId,
                 nombre_completo: nombre_completo.trim(),
                 correo: correo.toLowerCase().trim(),
+                rol: rolValido,
             },
         });
 
@@ -70,9 +74,9 @@ router.post('/login', async (req, res) => {
     }
 
     try {
-        // Buscar usuario por correo
+        // Buscar usuario por correo — incluir el campo `rol`
         const [rows] = await pool.query(
-            'SELECT id_usuario, nombre_completo, correo, contrasena FROM usuarios WHERE correo = ?',
+            'SELECT id_usuario, nombre_completo, correo, contrasena, rol FROM usuarios WHERE correo = ?',
             [correo.toLowerCase().trim()]
         );
 
@@ -90,7 +94,7 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
         }
 
-        console.log(`✅ Login exitoso: ${correo}`);
+        console.log(`✅ Login exitoso: ${correo} (Rol: ${user.rol || 'usuario'})`);
 
         res.json({
             message: 'Inicio de sesión exitoso',
@@ -98,6 +102,7 @@ router.post('/login', async (req, res) => {
                 id_usuario: user.id_usuario,
                 nombre_completo: user.nombre_completo,
                 correo: user.correo,
+                rol: user.rol || 'usuario',
             },
         });
 

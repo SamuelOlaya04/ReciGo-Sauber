@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import AppLogo from '../components/AppLogo';
 
 const { width } = Dimensions.get('window');
 
@@ -21,12 +22,6 @@ const BRAND_GREEN = '#22C55E';
 const BRAND_GREEN_DARK = '#16A34A';
 const BRAND_GREEN_LIGHT = '#4ADE80';
 
-// ─── Google "G" Logo as SVG-like component ──────────────────────────────
-const GoogleIcon = () => (
-    <View style={googleStyles.container}>
-        <Text style={googleStyles.g}>G</Text>
-    </View>
-);
 
 const googleStyles = StyleSheet.create({
     container: {
@@ -57,13 +52,7 @@ const HeroHeader = () => (
 
         {/* Logo */}
         <View style={styles.logoWrapper}>
-            <View style={styles.logoBox}>
-                <MaterialCommunityIcons name="recycle" size={40} color={BRAND_GREEN} />
-            </View>
-            {/* Checkmark badge */}
-            <View style={styles.checkBadge}>
-                <Ionicons name="checkmark-circle" size={22} color={BRAND_GREEN} />
-            </View>
+            <AppLogo size={80} animated={false} />
         </View>
 
         {/* App Name */}
@@ -71,7 +60,7 @@ const HeroHeader = () => (
 
         {/* Tagline */}
         <Text style={styles.heroSubtitle}>
-            Recicla, aprende y gana recompensas{'\n'}por cuidar nuestro planeta 🌿
+            Recicla, aprende y gana recompensas{'\n'}por cuidar nuestro planeta <MaterialCommunityIcons name="leaf" size={16} color="rgba(255,255,255,0.9)" />
         </Text>
     </LinearGradient>
 );
@@ -89,51 +78,33 @@ const LoginButtons = () => {
     const navigation = useNavigation();
 
     return (
-    <View style={styles.buttonsContainer}>
-        {/* Google Button */}
-        <TouchableOpacity
-            style={styles.googleButton}
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate('Home')}
-        >
-            <GoogleIcon />
-            <Text style={styles.googleButtonText}>Continuar con Google</Text>
-        </TouchableOpacity>
-
-        {/* Separator */}
-        <View style={styles.separatorRow}>
-            <View style={styles.separatorLine} />
-            <Text style={styles.separatorText}>o</Text>
-            <View style={styles.separatorLine} />
-        </View>
-
-        {/* Email Button */}
-        <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate('Login')}
-        >
-            <LinearGradient
-                colors={[BRAND_GREEN, BRAND_GREEN_DARK]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.emailButton}
-            >
-                <MaterialCommunityIcons name="email-outline" size={22} color="#fff" />
-                <Text style={styles.emailButtonText}>Iniciar sesión con correo</Text>
-            </LinearGradient>
-        </TouchableOpacity>
-
-        {/* Sign Up Link */}
-        <View style={styles.signUpRow}>
-            <Text style={styles.signUpText}>¿Eres nuevo en ReciGo? </Text>
+        <View style={styles.buttonsContainer}>
             <TouchableOpacity
-                activeOpacity={0.6}
-                onPress={() => navigation.navigate('Register')}
+                activeOpacity={0.7}
+                onPress={() => navigation.navigate('Login')}
             >
-                <Text style={styles.signUpLink}>Crear cuenta</Text>
+                <LinearGradient
+                    colors={[BRAND_GREEN, BRAND_GREEN_DARK]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.emailButton}
+                >
+                    <MaterialCommunityIcons name="email-outline" size={22} color="#fff" />
+                    <Text style={styles.emailButtonText}>Iniciar sesión con correo</Text>
+                </LinearGradient>
             </TouchableOpacity>
+
+            {/* Sign Up Link */}
+            <View style={styles.signUpRow}>
+                <Text style={styles.signUpText}>¿Eres nuevo en ReciGo? </Text>
+                <TouchableOpacity
+                    activeOpacity={0.6}
+                    onPress={() => navigation.navigate('Register')}
+                >
+                    <Text style={styles.signUpLink}>Crear cuenta</Text>
+                </TouchableOpacity>
+            </View>
         </View>
-    </View>
     );
 };
 

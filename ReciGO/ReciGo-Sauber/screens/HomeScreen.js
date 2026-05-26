@@ -58,7 +58,7 @@ const ImpactCard = ({ stats }) => {
                     <Text style={styles.impactStatLabel}>Racha actual</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={styles.impactStatNumber}>{racha}</Text>
-                        <Text style={{ fontSize: 16 }}> 🔥</Text>
+                        <MaterialIcons name="local-fire-department" size={20} color="#F97316" style={{ marginLeft: 4 }} />
                     </View>
                 </View>
                 <View style={[styles.impactStatBox, { marginLeft: 10 }]}>
@@ -73,18 +73,18 @@ const ImpactCard = ({ stats }) => {
 // ─── Tarjeta de acción animada ────────────────────────────────────────────────
 const QuickActionCard = ({ iconName, iconColor, bgColor, title, subtitle, onPress, delay = 0 }) => {
     const translateY = useRef(new Animated.Value(30)).current;
-    const opacity    = useRef(new Animated.Value(0)).current;
-    const scale      = useRef(new Animated.Value(1)).current;
+    const opacity = useRef(new Animated.Value(0)).current;
+    const scale = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
         Animated.parallel([
-            Animated.timing(opacity,    { toValue: 1, duration: 350, delay, useNativeDriver: true }),
+            Animated.timing(opacity, { toValue: 1, duration: 350, delay, useNativeDriver: true }),
             Animated.spring(translateY, { toValue: 0, friction: 7, tension: 60, delay, useNativeDriver: true }),
         ]).start();
     }, []);
 
-    const handlePressIn  = () => Animated.spring(scale, { toValue: 0.94, useNativeDriver: true, friction: 5 }).start();
-    const handlePressOut = () => Animated.spring(scale, { toValue: 1,    useNativeDriver: true, friction: 5 }).start();
+    const handlePressIn = () => Animated.spring(scale, { toValue: 0.94, useNativeDriver: true, friction: 5 }).start();
+    const handlePressOut = () => Animated.spring(scale, { toValue: 1, useNativeDriver: true, friction: 5 }).start();
 
     return (
         <Animated.View style={[styles.quickActionCard, { opacity, transform: [{ translateY }, { scale }] }]}>
@@ -138,12 +138,12 @@ export default function HomeScreen({ navigation }) {
                     <Text style={styles.sectionTitle}>Acciones rápidas</Text>
                     <View style={styles.quickActionsGrid}>
                         <View style={styles.quickActionsRow}>
-                            <QuickActionCard iconName="recycle"       iconColor={BRAND_GREEN} bgColor="#DCFCE7" title="Registrar"   subtitle="Agregar reciclaje"    delay={0}   onPress={() => navigation?.navigate('Agregar')} />
-                            <QuickActionCard iconName="medal-outline"  iconColor="#F97316"    bgColor="#FFF7ED" title="Logros"       subtitle="Ver puntos"          delay={80}  onPress={() => navigation?.navigate('Gamification')} />
+                            <QuickActionCard iconName="recycle" iconColor={BRAND_GREEN} bgColor="#DCFCE7" title="Registrar" subtitle="Agregar reciclaje" delay={0} onPress={() => navigation?.navigate('Agregar')} />
+                            <QuickActionCard iconName="medal-outline" iconColor="#F97316" bgColor="#FFF7ED" title="Logros" subtitle="Ver puntos" delay={80} onPress={() => navigation?.navigate('Gamification')} />
                         </View>
                         <View style={styles.quickActionsRow}>
-                            <QuickActionCard iconName="trending-up"   iconColor="#3B82F6"    bgColor="#EFF6FF" title="Estadísticas" subtitle="Ver dashboard"       delay={160} onPress={() => navigation?.navigate('Dashboard')} />
-                            <QuickActionCard iconName="book-open-outline" iconColor="#A855F7" bgColor="#FAF5FF" title="Aprender"    subtitle="Contenido educativo" delay={240} onPress={() => navigation?.navigate('Education')} />
+                            <QuickActionCard iconName="trending-up" iconColor="#3B82F6" bgColor="#EFF6FF" title="Estadísticas" subtitle="Ver dashboard" delay={160} onPress={() => navigation?.navigate('Dashboard')} />
+                            <QuickActionCard iconName="book-open-outline" iconColor="#A855F7" bgColor="#FAF5FF" title="Aprender" subtitle="Contenido educativo" delay={240} onPress={() => navigation?.navigate('Education')} />
                         </View>
                     </View>
                 </View>
@@ -185,38 +185,38 @@ export default function HomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-    headerWrap:     { backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-    header:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14 },
-    headerLeft:     { flexDirection: 'row', alignItems: 'center' },
-    headerTitle:    { fontSize: 20, fontWeight: '700', color: '#1F2937' },
+    headerWrap: { backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14 },
+    headerLeft: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ffffffff' },
+    headerTitle: { fontSize: 20, fontWeight: '700', color: '#1F2937' },
     headerSubtitle: { fontSize: 12, color: '#6B7280', marginTop: 1 },
     userIconCircle: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#F0FDF4', justifyContent: 'center', alignItems: 'center' },
-    scroll:         { flex: 1 },
-    scrollContent:  { paddingHorizontal: 20, paddingBottom: 24, paddingTop: 16 },
-    impactCard:     { backgroundColor: BRAND_GREEN, borderRadius: 20, padding: 20, marginBottom: 24, elevation: 8, shadowColor: BRAND_GREEN, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 12 },
-    impactTop:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
-    impactLabel:    { color: 'rgba(255,255,255,0.85)', fontSize: 14, fontWeight: '500' },
-    impactNumber:   { color: '#fff', fontSize: 44, fontWeight: '700', lineHeight: 52 },
-    impactPoints:   { color: 'rgba(255,255,255,0.85)', fontSize: 14 },
-    leafBadge:      { width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.25)', justifyContent: 'center', alignItems: 'center' },
+    scroll: { flex: 1 },
+    scrollContent: { paddingHorizontal: 20, paddingBottom: 24, paddingTop: 16 },
+    impactCard: { backgroundColor: BRAND_GREEN, borderRadius: 20, padding: 20, marginBottom: 24, elevation: 8, shadowColor: BRAND_GREEN, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 12 },
+    impactTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
+    impactLabel: { color: 'rgba(255,255,255,0.85)', fontSize: 14, fontWeight: '500' },
+    impactNumber: { color: '#fff', fontSize: 44, fontWeight: '700', lineHeight: 52 },
+    impactPoints: { color: 'rgba(255,255,255,0.85)', fontSize: 14 },
+    leafBadge: { width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.25)', justifyContent: 'center', alignItems: 'center' },
     impactStatsRow: { flexDirection: 'row' },
-    impactStatBox:  { flex: 1, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14 },
-    impactStatLabel:{ color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: '500', marginBottom: 4 },
+    impactStatBox: { flex: 1, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14 },
+    impactStatLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: '500', marginBottom: 4 },
     impactStatNumber: { color: '#fff', fontSize: 22, fontWeight: '700' },
-    section:        { marginBottom: 24 },
-    sectionTitle:   { fontSize: 18, fontWeight: '700', color: '#1F2937', marginBottom: 14 },
+    section: { marginBottom: 24 },
+    sectionTitle: { fontSize: 18, fontWeight: '700', color: '#1F2937', marginBottom: 14 },
     quickActionsGrid: { flexDirection: 'column' },
-    quickActionsRow:  { flexDirection: 'row', marginBottom: 12 },
-    quickActionCard:  { flex: 1, backgroundColor: '#fff', borderRadius: 16, marginRight: 12, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8 },
-    iconCircle:     { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
-    quickActionTitle:    { fontSize: 15, fontWeight: '600', color: '#1F2937', marginBottom: 2 },
+    quickActionsRow: { flexDirection: 'row', marginBottom: 12 },
+    quickActionCard: { flex: 1, backgroundColor: '#fff', borderRadius: 16, marginRight: 12, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.07, shadowRadius: 8 },
+    iconCircle: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+    quickActionTitle: { fontSize: 15, fontWeight: '600', color: '#1F2937', marginBottom: 2 },
     quickActionSubtitle: { fontSize: 12, color: '#6B7280' },
-    emptyActivity:  { backgroundColor: '#fff', borderRadius: 16, paddingVertical: 32, alignItems: 'center', elevation: 2 },
-    emptyIconCircle:{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-    emptyText:      { fontSize: 14, color: '#9CA3AF' },
-    activitySummary:{ backgroundColor: '#fff', borderRadius: 16, padding: 16, elevation: 2 },
-    activityRow:    { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
-    activityIcon:   { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 14 },
-    activityTitle:  { fontSize: 14, fontWeight: '600', color: '#1F2937', marginBottom: 2 },
-    activitySub:    { fontSize: 12, color: '#6B7280' },
+    emptyActivity: { backgroundColor: '#fff', borderRadius: 16, paddingVertical: 32, alignItems: 'center', elevation: 2 },
+    emptyIconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+    emptyText: { fontSize: 14, color: '#9CA3AF' },
+    activitySummary: { backgroundColor: '#fff', borderRadius: 16, padding: 16, elevation: 2 },
+    activityRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
+    activityIcon: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 14 },
+    activityTitle: { fontSize: 14, fontWeight: '600', color: '#1F2937', marginBottom: 2 },
+    activitySub: { fontSize: 12, color: '#6B7280' },
 });

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -13,6 +13,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import MainLayout from '../components/MainLayout';
 import AppLogo from '../components/AppLogo';
 import { API_URL } from '../config';
@@ -20,9 +21,6 @@ import { API_URL } from '../config';
 const BRAND_GREEN = '#22C55E';
 const BRAND_GREEN_DARK = '#16A34A';
 const BRAND_GREEN_LIGHT = '#4ADE80';
-
-// TODO: Cuando esté la autenticación real, reemplazar por el usuario logueado
-const ID_USUARIO_ACTUAL = 1;
 
 // ─── Lista de recompensas disponibles ─────────────────────────────────────
 const RECOMPENSAS = [
@@ -75,13 +73,36 @@ export default function GamificationScreen({ navigation }) {
     const [stats, setStats]     = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError]     = useState(null);
+    const [idUsuario, setIdUsuario] = useState(null);
+
+    // ─── Cargar el ID del usuario logueado desde AsyncStorage ──────────────
+    useEffect(() => {
+        const cargarUsuario = async () => {
+            try {
+                const stored = await AsyncStorage.getItem('usuario');
+                const user = stored ? JSON.parse(stored) : null;
+                if (user?.id_usuario) {
+                    setIdUsuario(user.id_usuario);
+                } else {
+                    setError('No se pudo identificar al usuario. Vuelve a iniciar sesión.');
+                    setLoading(false);
+                }
+            } catch (err) {
+                console.log('Error cargando usuario:', err.message);
+                setError('Error al leer la sesión.');
+                setLoading(false);
+            }
+        };
+        cargarUsuario();
+    }, []);
 
     const cargarEstadisticas = async () => {
+        if (!idUsuario) return;
         try {
             setLoading(true);
             setError(null);
             const { data } = await axios.get(
-                `${API_URL}/api/reciclaje/estadisticas/${ID_USUARIO_ACTUAL}`
+                `${API_URL}/api/reciclaje/estadisticas/${idUsuario}`
             );
             setStats(data);
         } catch (err) {
@@ -92,10 +113,12 @@ export default function GamificationScreen({ navigation }) {
         }
     };
 
+    // Se ejecuta cuando la pantalla recibe foco o cuando idUsuario cambia.
+    // Así, una vez carga el usuario desde AsyncStorage, se traen sus stats.
     useFocusEffect(
         useCallback(() => {
             cargarEstadisticas();
-        }, [])
+        }, [idUsuario])
     );
 
     // ─── Lógica de canje ──────────────────────────────────────────────────
@@ -118,7 +141,7 @@ export default function GamificationScreen({ navigation }) {
     const ejecutarCanje = async (recompensa) => {
         try {
             const { data } = await axios.post(`${API_URL}/api/reciclaje/canjear`, {
-                id_usuario:        ID_USUARIO_ACTUAL,
+                id_usuario:        idUsuario,
                 nombre_recompensa: recompensa.titulo,
                 puntos_costo:      recompensa.puntos,
             });

@@ -14,7 +14,7 @@ const YoutubePlayer = ({ youtubeId, color }) => {
     return (
       <View style={styles.videoWrapper}>
         <Text style={styles.videoLabel}>
-          🎬 Video explicativo
+          <MaterialCommunityIcons name="play-circle-outline" size={14} color="#374151" /> Video explicativo
         </Text>
         <iframe
           width="100%"
@@ -33,7 +33,7 @@ const YoutubePlayer = ({ youtubeId, color }) => {
   return (
     <View style={styles.videoWrapper}>
       <Text style={styles.videoLabel}>
-        🎬 Video explicativo
+        <MaterialCommunityIcons name="play-circle-outline" size={14} color="#374151" /> Video explicativo
       </Text>
       <WebView
         style={styles.video}

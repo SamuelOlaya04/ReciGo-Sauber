@@ -3,8 +3,6 @@ const router  = express.Router();
 const pool    = require('../db');
 
 // ─── Tabla de niveles (12 niveles con progresión considerada) ─────────────
-// Los rangos casi se duplican entre nivel y nivel para que los rangos altos
-// sean aspiracionales y requieran constancia real.
 const NIVELES = [
     { nombre: 'Principiante',          min: 0,       max: 100,     icono: 'sprout' },
     { nombre: 'Ecoamigo',              min: 100,     max: 300,     icono: 'leaf' },
@@ -93,7 +91,7 @@ function calcularRacha(diasRegistro) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// POST /api/reciclaje — registrar un nuevo reciclaje
+// POST /api/reciclaje — registrar un nuevo reciclaje (queda pendiente)
 // ═══════════════════════════════════════════════════════════════════════════
 router.post('/', async (req, res) => {
     const { id_usuario, id_categoria, cantidad } = req.body;
@@ -103,9 +101,10 @@ router.post('/', async (req, res) => {
     }
 
     try {
+        // Insertar con estado 'pendiente' explícitamente
         const [result] = await pool.query(
-            `INSERT INTO registros_reciclaje (id_usuario, id_categoria, cantidad)
-             VALUES (?, ?, ?)`,
+            `INSERT INTO registros_reciclaje (id_usuario, id_categoria, cantidad, estado)
+             VALUES (?, ?, ?, 'pendiente')`,
             [id_usuario, id_categoria, cantidad]
         );
 
@@ -114,6 +113,7 @@ router.post('/', async (req, res) => {
             [result.insertId]
         );
 
+        // El total de puntos no cambia aún (el registro está pendiente)
         const [[totales]] = await pool.query(
             `SELECT COALESCE(SUM(puntos), 0) AS total FROM puntos WHERE id_usuario = ?`,
             [id_usuario]
@@ -121,10 +121,11 @@ router.post('/', async (req, res) => {
 
         res.json({
             ok:               true,
-            message:          'Reciclaje registrado',
+            message:          'Reciclaje registrado y pendiente de validación',
             id_registro:      result.insertId,
             puntos_generados: registro.puntos_generados,
             total_puntos:     totales.total,
+            estado:           'pendiente',
         });
 
     } catch (error) {
@@ -135,6 +136,7 @@ router.post('/', async (req, res) => {
 
 // ═══════════════════════════════════════════════════════════════════════════
 // GET /api/reciclaje/estadisticas/:id_usuario — estadísticas de gamificación
+// Solo considera registros con estado = 'aprobado'
 // ═══════════════════════════════════════════════════════════════════════════
 router.get('/estadisticas/:id_usuario', async (req, res) => {
     const { id_usuario } = req.params;
@@ -175,19 +177,27 @@ router.get('/estadisticas/:id_usuario', async (req, res) => {
             [id_usuario]
         );
 
-        // 5. Número total de registros
+        // 5. Número total de registros APROBADOS
         const [[registros]] = await pool.query(
             `SELECT COUNT(*) AS registros_totales
              FROM registros_reciclaje
-             WHERE id_usuario = ?`,
+             WHERE id_usuario = ? AND estado = 'aprobado'`,
             [id_usuario]
         );
 
-        // 6. Días distintos con actividad (para racha)
+        // 6. Número de registros PENDIENTES del usuario
+        const [[pendientes]] = await pool.query(
+            `SELECT COUNT(*) AS registros_pendientes
+             FROM registros_reciclaje
+             WHERE id_usuario = ? AND estado = 'pendiente'`,
+            [id_usuario]
+        );
+
+        // 7. Días distintos con actividad APROBADA (para racha)
         const [diasRegistro] = await pool.query(
             `SELECT DISTINCT DATE(fecha_registro) AS dia
              FROM registros_reciclaje
-             WHERE id_usuario = ?
+             WHERE id_usuario = ? AND estado = 'aprobado'
              ORDER BY dia DESC`,
             [id_usuario]
         );
@@ -197,6 +207,7 @@ router.get('/estadisticas/:id_usuario', async (req, res) => {
         const puntos_semana     = parseFloat(semana.puntos_semana);
         const puntos_mes        = parseFloat(mes.puntos_mes);
         const registros_totales = parseInt(registros.registros_totales);
+        const registros_pendientes = parseInt(pendientes.registros_pendientes);
 
         const promedio_por_registro = registros_totales > 0
             ? parseFloat((puntos_ganados / registros_totales).toFixed(2))
@@ -215,6 +226,7 @@ router.get('/estadisticas/:id_usuario', async (req, res) => {
             puntos_semana,
             puntos_mes,
             registros_totales,
+            registros_pendientes,
             promedio_por_registro,
             racha_dias,
             nivel,
@@ -223,6 +235,199 @@ router.get('/estadisticas/:id_usuario', async (req, res) => {
 
     } catch (error) {
         console.error('Error estadisticas:', error.message);
+        res.status(500).json({ ok: false, message: error.message });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GET /api/reciclaje/pendientes — listar registros pendientes (para admin)
+// ═══════════════════════════════════════════════════════════════════════════
+router.get('/pendientes', async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            `SELECT
+                rr.id_registro,
+                rr.cantidad,
+                rr.puntos_generados,
+                rr.fecha_registro,
+                rr.estado,
+                u.id_usuario,
+                u.nombre_completo,
+                u.correo,
+                c.nombre AS categoria,
+                c.id_categoria
+             FROM registros_reciclaje rr
+             JOIN usuarios u ON rr.id_usuario = u.id_usuario
+             JOIN categorias c ON rr.id_categoria = c.id_categoria
+             WHERE rr.estado = 'pendiente'
+             ORDER BY rr.fecha_registro ASC`
+        );
+
+        res.json({ ok: true, pendientes: rows });
+
+    } catch (error) {
+        console.error('Error pendientes:', error.message);
+        res.status(500).json({ ok: false, message: error.message });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GET /api/reciclaje/historial-admin — historial reciente de validaciones
+// ═══════════════════════════════════════════════════════════════════════════
+router.get('/historial-admin', async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            `SELECT
+                rr.id_registro,
+                rr.cantidad,
+                rr.puntos_generados,
+                rr.fecha_registro,
+                rr.estado,
+                u.nombre_completo,
+                u.correo,
+                c.nombre AS categoria
+             FROM registros_reciclaje rr
+             JOIN usuarios u ON rr.id_usuario = u.id_usuario
+             JOIN categorias c ON rr.id_categoria = c.id_categoria
+             WHERE rr.estado IN ('aprobado', 'rechazado')
+             ORDER BY rr.fecha_registro DESC
+             LIMIT 20`
+        );
+
+        res.json({ ok: true, historial: rows });
+
+    } catch (error) {
+        console.error('Error historial admin:', error.message);
+        res.status(500).json({ ok: false, message: error.message });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// POST /api/reciclaje/validar — aprobar o rechazar un registro (admin)
+// ═══════════════════════════════════════════════════════════════════════════
+router.post('/validar', async (req, res) => {
+    const { id_registro, estado } = req.body;
+
+    if (!id_registro || !['aprobado', 'rechazado'].includes(estado)) {
+        return res.status(400).json({ ok: false, message: 'Datos inválidos. estado debe ser aprobado o rechazado' });
+    }
+
+    try {
+        // Verificar que el registro exista y esté pendiente
+        const [[registro]] = await pool.query(
+            `SELECT id_registro, id_usuario, puntos_generados, estado
+             FROM registros_reciclaje WHERE id_registro = ?`,
+            [id_registro]
+        );
+
+        if (!registro) {
+            return res.status(404).json({ ok: false, message: 'Registro no encontrado' });
+        }
+
+        if (registro.estado !== 'pendiente') {
+            return res.status(400).json({
+                ok: false,
+                message: `El registro ya fue procesado (estado: ${registro.estado})`,
+            });
+        }
+
+        // Actualizar el estado del registro
+        await pool.query(
+            `UPDATE registros_reciclaje SET estado = ? WHERE id_registro = ?`,
+            [estado, id_registro]
+        );
+
+        // Si es aprobado → acreditar puntos en la tabla `puntos`
+        if (estado === 'aprobado') {
+            await pool.query(
+                `INSERT INTO puntos (id_usuario, id_registro, puntos)
+                 VALUES (?, ?, ?)`,
+                [registro.id_usuario, id_registro, registro.puntos_generados]
+            );
+            console.log(`✅ Registro #${id_registro} aprobado — ${registro.puntos_generados} pts acreditados a usuario #${registro.id_usuario}`);
+        } else {
+            console.log(`❌ Registro #${id_registro} rechazado`);
+        }
+
+        res.json({
+            ok: true,
+            message: estado === 'aprobado'
+                ? `Registro aprobado. Se acreditaron ${registro.puntos_generados} puntos.`
+                : 'Registro rechazado.',
+            id_registro,
+            estado,
+            puntos_acreditados: estado === 'aprobado' ? parseFloat(registro.puntos_generados) : 0,
+        });
+
+    } catch (error) {
+        console.error('Error validar:', error.message);
+        res.status(500).json({ ok: false, message: error.message });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PUT /api/reciclaje/editar — editar un registro pendiente (admin)
+// Permite modificar la categoría y/o cantidad antes de aprobar/rechazar
+// ═══════════════════════════════════════════════════════════════════════════
+router.put('/editar', async (req, res) => {
+    const { id_registro, id_categoria, cantidad } = req.body;
+
+    if (!id_registro || !id_categoria || !cantidad || cantidad <= 0) {
+        return res.status(400).json({ ok: false, message: 'Datos inválidos. Se requiere id_registro, id_categoria y cantidad > 0' });
+    }
+
+    try {
+        // Verificar que el registro exista y esté pendiente
+        const [[registro]] = await pool.query(
+            `SELECT id_registro, estado FROM registros_reciclaje WHERE id_registro = ?`,
+            [id_registro]
+        );
+
+        if (!registro) {
+            return res.status(404).json({ ok: false, message: 'Registro no encontrado' });
+        }
+
+        if (registro.estado !== 'pendiente') {
+            return res.status(400).json({
+                ok: false,
+                message: `Solo se pueden editar registros pendientes (estado actual: ${registro.estado})`,
+            });
+        }
+
+        // Obtener puntos_por_unidad de la nueva categoría
+        const [[categoria]] = await pool.query(
+            `SELECT nombre, puntos_por_unidad FROM categorias WHERE id_categoria = ?`,
+            [id_categoria]
+        );
+
+        if (!categoria) {
+            return res.status(400).json({ ok: false, message: 'Categoría no encontrada' });
+        }
+
+        const nuevos_puntos = parseInt(cantidad) * parseFloat(categoria.puntos_por_unidad);
+
+        // Actualizar el registro
+        await pool.query(
+            `UPDATE registros_reciclaje
+             SET id_categoria = ?, cantidad = ?, puntos_generados = ?
+             WHERE id_registro = ?`,
+            [id_categoria, parseInt(cantidad), nuevos_puntos, id_registro]
+        );
+
+        console.log(`✏️ Registro #${id_registro} editado — ${categoria.nombre} x${cantidad} = ${nuevos_puntos} pts`);
+
+        res.json({
+            ok: true,
+            message: 'Registro editado correctamente',
+            id_registro,
+            categoria: categoria.nombre,
+            id_categoria: parseInt(id_categoria),
+            cantidad: parseInt(cantidad),
+            puntos_generados: nuevos_puntos,
+        });
+
+    } catch (error) {
+        console.error('Error editar:', error.message);
         res.status(500).json({ ok: false, message: error.message });
     }
 });

@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
+const BRAND_BLUE = '#3B82F6';
 import {
     View,
     Text,
@@ -188,6 +189,7 @@ export default function ProfileScreen({ navigation, route }) {
 
     const puntosTotal = stats?.puntos_totales ?? 0;
     const nivelNombre = stats?.nivel?.nombre ?? 'Principiante';
+    const esAdmin = usuario?.rol === 'admin';
 
     return (
         <MainLayout navigation={navigation} activeScreen="Profile">
@@ -202,10 +204,17 @@ export default function ProfileScreen({ navigation, route }) {
                     <AnimatedAvatar />
                     <Text style={styles.userName}>{nombreUsuario}</Text>
                     <View style={styles.badgeRow}>
-                        <View style={styles.badge}>
-                            <MaterialCommunityIcons name="leaf" size={14} color={BRAND_GREEN} />
-                            <Text style={styles.badgeText}>{getFechaRegistro()}</Text>
-                        </View>
+                        {esAdmin ? (
+                            <View style={[styles.badge, { backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#BFDBFE' }]}>
+                                <MaterialCommunityIcons name="shield-check" size={14} color={BRAND_BLUE} />
+                                <Text style={[styles.badgeText, { color: BRAND_BLUE, fontWeight: '700' }]}>Administrador</Text>
+                            </View>
+                        ) : (
+                            <View style={styles.badge}>
+                                <MaterialCommunityIcons name="leaf" size={14} color={BRAND_GREEN} />
+                                <Text style={styles.badgeText}>{getFechaRegistro()}</Text>
+                            </View>
+                        )}
                     </View>
                 </View>
 
@@ -218,8 +227,8 @@ export default function ProfileScreen({ navigation, route }) {
 
                     <InfoCard
                         icon="account-outline"
-                        iconColor={BRAND_GREEN}
-                        bgColor="#DCFCE7"
+                        iconColor={esAdmin ? BRAND_BLUE : BRAND_GREEN}
+                        bgColor={esAdmin ? '#EFF6FF' : '#DCFCE7'}
                         label="Nombre"
                         value={nombreUsuario}
                         delay={0}
@@ -232,22 +241,35 @@ export default function ProfileScreen({ navigation, route }) {
                         value={correoUsuario}
                         delay={80}
                     />
-                    <InfoCard
-                        icon="star-outline"
-                        iconColor="#F97316"
-                        bgColor="#FFF7ED"
-                        label="Puntos totales"
-                        value={`${puntosTotal} pts`}
-                        delay={160}
-                    />
-                    <InfoCard
-                        icon="shield-check-outline"
-                        iconColor="#A855F7"
-                        bgColor="#FAF5FF"
-                        label="Nivel"
-                        value={nivelNombre}
-                        delay={240}
-                    />
+                    {esAdmin ? (
+                        <InfoCard
+                            icon="shield-check-outline"
+                            iconColor={BRAND_BLUE}
+                            bgColor="#EFF6FF"
+                            label="Rol de cuenta"
+                            value="Administrador del sistema"
+                            delay={160}
+                        />
+                    ) : (
+                        <>
+                            <InfoCard
+                                icon="star-outline"
+                                iconColor="#F97316"
+                                bgColor="#FFF7ED"
+                                label="Puntos totales"
+                                value={`${puntosTotal} pts`}
+                                delay={160}
+                            />
+                            <InfoCard
+                                icon="shield-check-outline"
+                                iconColor="#A855F7"
+                                bgColor="#FAF5FF"
+                                label="Nivel"
+                                value={nivelNombre}
+                                delay={240}
+                            />
+                        </>
+                    )}
                     <InfoCard
                         icon="calendar-outline"
                         iconColor="#06B6D4"
@@ -257,6 +279,17 @@ export default function ProfileScreen({ navigation, route }) {
                         delay={320}
                     />
                 </View>
+
+                {/* ── Botón de editar perfil ──────────── */}
+                <TouchableOpacity
+                    style={styles.editButton}
+                    activeOpacity={0.7}
+                    onPress={() => navigation?.navigate('EditProfile', { usuario })}
+                >
+                    <MaterialCommunityIcons name="pencil-outline" size={20} color={BRAND_GREEN} />
+                    <Text style={styles.editButtonText}>Editar perfil</Text>
+                    <MaterialCommunityIcons name="chevron-right" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
 
                 {/* ── Botón de cerrar sesión ──────────── */}
                 <Animated.View style={{ transform: [{ scale: logoutScale }] }}>
@@ -423,6 +456,31 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: '600',
         color: '#1F2937',
+    },
+
+    // ─── Botón editar perfil ────────────
+    editButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        marginBottom: 12,
+        borderWidth: 1.5,
+        borderColor: '#DCFCE7',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.04,
+        shadowRadius: 6,
+    },
+    editButtonText: {
+        flex: 1,
+        fontSize: 16,
+        fontWeight: '600',
+        color: BRAND_GREEN,
+        marginLeft: 12,
     },
 
     // ─── Botón cerrar sesión ────────────

@@ -57,7 +57,8 @@ export default function RegisterScreen() {
         }
         setLoading(true);
         try {
-            await registerUser(name.trim(), email.trim(), password);
+            // Registro siempre como 'usuario'. Los admins se crean directamente en la BD.
+            await registerUser(name.trim(), email.trim(), password, 'usuario');
             setSuccessVisible(true);
             setTimeout(() => {
                 navigation.navigate('Login');
@@ -92,7 +93,10 @@ export default function RegisterScreen() {
                     </TouchableOpacity>
 
                     {/* ── Heading ──────────────── */}
-                    <Text style={styles.heading}>Crea tu cuenta 🌱</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                        <Text style={styles.heading}>Crea tu cuenta</Text>
+                        <MaterialCommunityIcons name="leaf" size={26} color="#22C55E" />
+                    </View>
                     <Text style={styles.subheading}>Únete y comienza a hacer la diferencia</Text>
 
                     {/* ── Success Banner ──────── */}
@@ -100,7 +104,10 @@ export default function RegisterScreen() {
                         <View style={styles.successBox}>
                             <Ionicons name="checkmark-circle-outline" size={24} color="#16A34A" style={{ marginRight: 12 }} />
                             <View style={{ flex: 1 }}>
-                                <Text style={styles.successTitle}>¡Cuenta creada exitosamente! 🌱</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                    <Text style={styles.successTitle}>¡Cuenta creada exitosamente!</Text>
+                                    <MaterialCommunityIcons name="leaf" size={16} color="#16A34A" />
+                                </View>
                                 <Text style={styles.successSubtitle}>Redirigiendo al inicio de sesión...</Text>
                             </View>
                         </View>
@@ -235,9 +242,10 @@ export default function RegisterScreen() {
                         disabled={loading}
                     >
                         <LinearGradient
-                            colors={isFormValid && !loading
-                                ? [BRAND_GREEN, BRAND_GREEN_DARK]
-                                : ['#D1D5DB', '#9CA3AF']
+                            colors={
+                                isFormValid && !loading
+                                    ? [BRAND_GREEN, BRAND_GREEN_DARK]
+                                    : ['#D1D5DB', '#9CA3AF']
                             }
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
@@ -246,7 +254,10 @@ export default function RegisterScreen() {
                             {loading ? (
                                 <ActivityIndicator color="#FFFFFF" size="small" />
                             ) : (
-                                <Text style={styles.registerButtonText}>Crear cuenta</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                    <MaterialCommunityIcons name="leaf" size={20} color="#fff" />
+                                    <Text style={styles.registerButtonText}>Crear cuenta</Text>
+                                </View>
                             )}
                         </LinearGradient>
                     </TouchableOpacity>

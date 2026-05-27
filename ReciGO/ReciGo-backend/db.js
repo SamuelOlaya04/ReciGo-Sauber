@@ -12,14 +12,30 @@ const pool = mysql.createPool({
     queueLimit: 0,
 });
 
-// Verificar conexión al iniciar
-pool.getConnection()
-    .then(conn => {
+const initDatabase = (async () => {
+    const conn = await pool.getConnection();
+
+    try {
         console.log('Conexión a MySQL exitosa');
+
+        const [columns] = await conn.query(
+            "SHOW COLUMNS FROM usuarios LIKE 'activo'"
+        );
+
+        if (columns.length === 0) {
+            await conn.query(
+                'ALTER TABLE usuarios ADD COLUMN activo TINYINT(1) NOT NULL DEFAULT 1 AFTER rol'
+            );
+
+            console.log('Columna usuarios.activo creada correctamente');
+        }
+    } finally {
         conn.release();
-    })
-    .catch(err => {
-        console.error('Error al conectar a MySQL:', err.message);
-    });
+    }
+})().catch(err => {
+    console.error('Error al preparar la base de datos:', err.message);
+    throw err;
+});
 
 module.exports = pool;
+module.exports.initDatabase = initDatabase;

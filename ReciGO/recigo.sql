@@ -176,6 +176,7 @@ CREATE TABLE `usuarios` (
   `correo` varchar(100) NOT NULL,
   `contrasena` varchar(255) NOT NULL,
   `rol` varchar(20) NOT NULL DEFAULT 'usuario',
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -183,9 +184,9 @@ CREATE TABLE `usuarios` (
 -- Volcado de datos para la tabla `usuarios`
 --
 
-INSERT INTO `usuarios` (`id_usuario`, `nombre_completo`, `correo`, `contrasena`, `rol`, `fecha_creacion`) VALUES
-(1, 'Samuel Olaya Paramo', 'olayasamuel17@gmail.com', '$2a$10$43A5ij8U2lyP2lbTF5T7ZukSAsVvzHYpgi7U792QAPwKsKUD8juJq', 'usuario', '2026-05-02 18:55:10'),
-(2, 'Juan Camilo Vargas', 'juancamilovargasjimenez676@gmail.com', '$2a$10$wC.za5tWWwQUnX9Ih/oM8.HMzsrPbSiLaekTIsPWFJvH2MlHJoL22', 'admin', '2026-05-22 05:10:55');
+INSERT INTO `usuarios` (`id_usuario`, `nombre_completo`, `correo`, `contrasena`, `rol`, `activo`, `fecha_creacion`) VALUES
+(1, 'Samuel Olaya Paramo', 'olayasamuel17@gmail.com', '$2a$10$43A5ij8U2lyP2lbTF5T7ZukSAsVvzHYpgi7U792QAPwKsKUD8juJq', 'usuario', 1, '2026-05-02 18:55:10'),
+(2, 'Juan Camilo Vargas', 'juancamilovargasjimenez676@gmail.com', '$2a$10$wC.za5tWWwQUnX9Ih/oM8.HMzsrPbSiLaekTIsPWFJvH2MlHJoL22', 'admin', 1, '2026-05-22 05:10:55');
 
 --
 -- Índices para tablas volcadas
